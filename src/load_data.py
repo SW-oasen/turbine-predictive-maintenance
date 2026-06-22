@@ -6,7 +6,7 @@ import numpy as np
 from sqlalchemy import create_engine
 import requests
 
-from src.config import *
+from config import *
 
 SENSOR_COUNT = 21
 COLS = ["unit_nr","time_cycles","setting1","setting2","setting3"] + [f"sensor{i}" for i in range(1,SENSOR_COUNT+1)]

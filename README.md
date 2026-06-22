@@ -1,352 +1,168 @@
-# Turbofan Engine Predictive Maintenance Pipeline
+# Turbofan Predictive Maintenance – Vorhersage der Remaining Useful Life (RUL)
 
-A comprehensive MLOps pipeline for predicting Remaining Useful Life (RUL) of NASA CMAPSS turbofan engines using advanced machine learning techniques and GPU acceleration.
+Ein End-to-End Machine-Learning-Projekt zur Vorhersage der **Remaining Useful Life (RUL)** von Turbofan-Triebwerken auf Basis des **NASA CMAPSS**-Datensatzes.
 
-## Project Overview
-
-This project implements an end-to-end predictive maintenance solution for aircraft turbofan engines, featuring automated ETL pipelines, feature engineering, multiple ML models, and real-time monitoring dashboards.
-
-### Key Features
-
-- **Complete ETL Pipeline**: Automated data extraction, transformation, and loading
-- **Feature Engineering**: Rolling statistics, differences, and z-score normalization
-- **Multiple ML Models**: Linear Regression, Random Forest, XGBoost with hyperparameter tuning
-- **GPU Acceleration**: PyTorch neural networks and GPU-accelerated XGBoost
-- **Interactive Dashboard**: Real-time monitoring with Streamlit
-- **dbt Integration**: Data transformations and analytics-ready tables
-- **Workflow Automation**: n8n integration for pipeline orchestration
-
-## Dataset
-
-The project uses NASA's Commercial Modular Aero-Propulsion System Simulation (CMAPSS) dataset:
-
-- **FD001**: Sea level conditions, single fault mode
-- **FD002**: Sea level conditions, multiple fault modes  
-- **FD003**: High altitude conditions, single fault mode
-- **FD004**: High altitude conditions, multiple fault modes
-
-Each dataset contains engine sensor readings, operational settings, and run-to-failure data for training predictive models.
-
-## Architecture
-
-```
-├── data/
-│   ├── raw/           # Original CMAPSS dataset files
-│   ├── interim/       # Intermediate processed data
-│   └── processed/     # Final engineered features
-├── db-sqlite/         # SQLite database
-├── src/           # Core pipeline src
-├── turbine_etl_dbt/   # dbt models and transformations
-├── notebooks/         # Jupyter analysis notebooks
-├── results/           # Model outputs and visualizations
-├── dashboard/         # Streamlit dashboard components
-└── n8n/              # Workflow automation configs
-```
-
-## Installation
-
-### Prerequisites
-
-- Python 3.8+
-- NVIDIA GPU with CUDA support (optional, for GPU acceleration)
-- SQLite 3
-- Git
-
-### Environment Setup
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd Turbine-Maintenance-ETL/Workspace
-```
-
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\src\activate
-```
-
-3. Install dependencies:
-```bash
-# For CPU-only setup
-pip install -r requirements.txt
-
-# For GPU-accelerated setup (requires CUDA)
-pip install -r src/requirements_gpu.txt
-```
-
-4. Install dbt:
-```bash
-pip install dbt-core dbt-sqlite
-```
-
-### Data Setup
-
-1. Download NASA CMAPSS dataset:
-Turbofan Engine Degradation Simulation:
-https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/
-
-Download: 
-https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zips
-
-2. Extract files to `data/raw` directory:
-```
-data/raw/
-├── train_FD001.txt
-├── train_FD002.txt
-├── train_FD003.txt
-├── train_FD004.txt
-├── test_FD001.txt
-├── test_FD002.txt
-├── test_FD003.txt
-├── test_FD004.txt
-├── RUL_FD001.txt
-├── RUL_FD002.txt
-├── RUL_FD003.txt
-└── RUL_FD004.txt
-```
-
-## Usage
-
-### 0. Set up environment
-
-```bash
-python -m venv venv
-.venv\Scripts\Activate.ps1
-pip install -r .\requirements.txt
-```
-python 3.10 bis 3.13 benötigt für sklearn, aktuell installiert 3.13.14 für venv 
-uv add scikit-learn
-
-BayesianSearch benötigt 
-uv add scikit-optimize
-
-
-### 1. Run ETL Pipeline
-
-```bash
-# Execute complete ETL pipeline
-python src/etl_turbofan.py
-
-# With custom configuration
-python src/etl_turbofan.py --config src/etl_config.yaml
-```
-
-### 2. Run dbt Transformations
-- TODO
-
-```bash
-cd turbine_etl_dbt
-dbt run
-dbt test
-```
-
-### 3. Train ML Models
-
-```bash
-# Standard ML pipeline (CPU)
-python src/ml_pipeline.py
-
-# GPU-accelerated pipeline (requires CUDA)
-python src/ml_pipeline_gpu.py
-```
-
-### 4. Launch Dashboard
-
-```bash
-streamlit run src/streamlit_dashboard.py
-```
-
-Access dashboard at: http://localhost:8501
-
-### 5. Jupyter Analysis
-
-```bash
-jupyter notebook notebooks/trubine_maintenance_etl.ipynb
-```
-
-## Pipeline Components
-
-### ETL Pipeline (`src/etl_turbofan.py`)
-
-- **Data Loading**: Reads CMAPSS text files with proper parsing
-- **Feature Engineering**: Creates rolling windows, differences, z-scores
-- **Data Validation**: Ensures sensor consistency across datasets
-- **Database Storage**: Saves to SQLite with optimized schema
-
-### ML Pipeline (`src/ml_pipeline.py`)
-
-- **Model Training**: Linear Regression, Random Forest, XGBoost
-- **Hyperparameter Tuning**: Grid search with cross-validation
-- **Model Evaluation**: RMSE, MAE, R-squared metrics
-- **Prediction Storage**: Saves results to database
-
-### GPU Pipeline (`src/ml_pipeline_gpu.py`)
-
-- **GPU Detection**: Automatic CUDA availability checking
-- **Accelerated Training**: PyTorch neural networks, GPU XGBoost
-- **Memory Optimization**: CuPy for GPU NumPy operations
-- **Performance Monitoring**: GPU memory usage tracking
-
-### Dashboard (`src/streamlit_dashboard.py`)
-
-- **Real-time Monitoring**: Engine health visualization
-- **Interactive Filtering**: Multi-engine selection and analysis
-- **Performance Metrics**: Model comparison and accuracy display
-- **Data Exploration**: Raw data viewing and sensor distributions
-
-## Configuration
-
-### ETL Configuration (`src/etl_config.yaml`)
-
-```yaml
-db_url: "sqlite:///db-sqlite/turbofan.db"
-datasets:
-  - code: "FD001"
-    train: "data/raw/train_FD001.txt"
-    test: "data/raw/test_FD001.txt"
-    rul: "data/raw/RUL_FD001.txt"
-options:
-  rolling_windows: [5, 20]
-  drop_constant_sensors: true
-  checkpoint: true
-```
-
-### dbt Configuration (`turbine_etl_dbt/profiles.yml`)
-
-```yaml
-turbine_etl:
-  target: dev
-  outputs:
-    dev:
-      type: sqlite
-      database: ../db-sqlite/turbofan.db
-      schema: main
-```
-
-## Model Performance
-
-### Validation Results
-
-| Model | RMSE | MAE | R² | Training Time |
-|-------|------|-----|----|----|
-| Linear Regression | 23.45 | 18.32 | 0.756 | 0.12s |
-| Random Forest | 19.87 | 14.56 | 0.823 | 45.2s |
-| XGBoost | 18.23 | 13.44 | 0.847 | 67.8s |
-| PyTorch NN (GPU) | 17.91 | 12.98 | 0.854 | 23.4s |
-
-### Cross-Dataset Performance
-
-Models are evaluated across all four CMAPSS datasets to ensure robustness across different operating conditions and fault modes.
-
-## Development
-
-### Project Structure
-
-```
-src/
-├── etl_turbofan.py          # Main ETL pipeline
-├── ml_pipeline.py           # CPU ML pipeline
-├── ml_pipeline_gpu.py       # GPU ML pipeline  
-├── streamlit_dashboard.py   # Interactive dashboard
-├── etl_config.yaml         # ETL configuration
-└── requirements_gpu.txt     # GPU dependencies
-
-turbine_etl_dbt/
-├── models/                  # dbt model definitions
-├── macros/                  # Reusable SQL macros
-├── tests/                   # Data quality tests
-└── dbt_project.yml         # dbt project config
-
-notebooks/
-└── trubine_maintenance_etl.ipynb  # Analysis notebook
-```
-
-### Testing
-
-```bash
-# Run dbt tests
-cd turbine_etl_dbt
-dbt test
-
-# Run Python tests
-python -m pytest test/
-```
-
-### Logging
-
-All pipeline components generate detailed logs in the `logs` directory:
-
-- `etl_log.txt`: ETL pipeline execution logs
-- `ml_gpu_output.txt`: GPU pipeline logs  
-- `streamlit_log.txt`: Dashboard access logs
-- `dbt_log.txt`: dbt transformation logs
-
-## Workflow Automation
-
-### Prefect Workflow 
-- TODO
-
-## Performance Optimization
-
-### GPU Acceleration
-
-For systems with NVIDIA GPUs:
-
-1. Install CUDA toolkit (12.6+)
-2. Install GPU-specific packages:
-```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-pip install cupy-cuda12x
-pip install xgboost[gpu]
-```
-
-3. Run GPU pipeline:
-```bash
-python src/ml_pipeline_gpu.py
-```
-
-### Memory Optimization
-
-- Data type optimization reduces memory usage by 40%
-- Chunked processing for large datasets
-- GPU memory management with automatic cleanup
-- SQLite connection pooling for concurrent access
-
-## Deployment
-
-### Production Checklist
-
-- [ ] Configure production database connection
-- [ ] Set up model serving infrastructure  
-- [ ] Implement model monitoring and drift detection
-- [ ] Configure automated retraining schedules
-- [ ] Set up alerting and notification systems
-- [ ] Deploy dashboard with authentication
-- [ ] Configure backup and recovery procedures
-
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/new-feature`)
-3. Commit changes (`git commit -am 'Add new feature'`)
-4. Push to branch (`git push origin feature/new-feature`)
-5. Create Pull Request
-
-## License
-
-This project is licensed under the MIT License. 
-
-## References
-
-- NASA Prognostics Data Repository: https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository/
-- CMAPSS Dataset: Saxena, A. and Goebel, K. (2008). "Turbofan Engine Degradation Simulation Data Set", NASA Ames Prognostics Data Repository
-- dbt Documentation: https://docs.getdbt.com/
-- Streamlit Documentation: https://docs.streamlit.io/
+Das Projekt demonstriert den kompletten Workflow von der Datenaufbereitung über Feature Engineering bis hin zur Modelloptimierung und interaktiven Visualisierung mit Streamlit.
 
 ---
 
-## Author:
+## Projektübersicht
 
-Yuchuan Liu, updated on 2026-06-18
+Predictive Maintenance ermöglicht es, den verbleibenden Lebenszyklus einer Maschine abzuschätzen und Wartungen rechtzeitig durchzuführen.
+
+In diesem Projekt werden Sensordaten simulierte Flugzeugtriebwerke verwendet, um die Anzahl der verbleibenden Betriebszyklen (**Remaining Useful Life, RUL**) vorherzusagen.
+
+Besonderer Wert wurde auf eine **realistische Evaluierung ohne Data Leakage** gelegt. Im Gegensatz zu zufälligen Train-Test-Splits erfolgt die Bewertung ausschließlich anhand der offiziellen Testdaten.
+
+---
+
+## Datensatz
+
+Verwendet wird der **NASA CMAPSS Turbofan Engine Degradation Simulation Dataset**.
+
+Enthalten sind vier unterschiedliche Szenarien:
+
+| Datensatz | Betriebsbedingungen | Fehlermodi |
+|-----------|--------------------|------------|
+| FD001 | Eine | HPC |
+| FD002 | Mehrere | HPC |
+| FD003 | Eine | HPC + Fan |
+| FD004 | Mehrere | HPC + Fan |
+
+Jeder Zyklus enthält:
+
+- 3 Operational Settings
+- 21 Sensorsignale
+- Zyklusnummer (`time_cycles`)
+- Remaining Useful Life (`RUL`)
+
+---
+
+## Projektstruktur
+
+```
+.
+├── data/          # Rohdaten (nicht versioniert)
+├── db/            # SQLite-Datenbank
+├── models/        # Trainierte Modelle und Auswertungen
+├── notebooks/     # Experimente
+├── src/           # ETL, Datenbank, Modelltraining und Dashboard
+└── README.md
+```
+
+---
+
+## Datenpipeline
+
+- Zusammenführen aller vier CMAPSS-Datensätze
+- Berechnung der RUL für Trainingsdaten
+- Speicherung in einer SQLite-Datenbank
+- Separate Views für Training und Test
+- Saubere Trennung von Trainings- und Evaluierungsdaten
+
+---
+
+## Feature Engineering
+
+Untersucht wurden unter anderem:
+
+- Sensorwerte
+- Differenz-Features (`sensor_diff`)
+- Rolling Features
+- Betriebsbedingungen (`condition`)
+- Fehlermodi (`fault_mode`)
+- RUL-Capping
+
+Die größten Verbesserungen wurden erzielt durch:
+
+- **Sensor-Differenzmerkmale**
+- **RUL-Capping auf maximal 150 Zyklen**
+
+Rolling Features sowie `condition` und `fault_mode` lieferten dagegen nur geringe Verbesserungen.
+
+---
+
+## Modelle
+
+Verglichen wurden verschiedene Regressionsverfahren.
+
+Die besten Ergebnisse erzielten:
+
+- LightGBM
+- XGBoost
+
+Anschließend wurden beide Modelle mit **Bayesian Optimization** weiter optimiert.
+
+---
+
+## Ergebnisse
+
+| Modell | MAE | RMSE | R² |
+|---------|----:|------:|---:|
+| Tuned LightGBM | **17.82** | **24.33** | **0.77** |
+| Tuned XGBoost | **17.98** | **24.40** | **0.77** |
+
+Gegenüber der ursprünglichen Baseline konnte die Modellleistung deutlich verbessert werden.
+
+---
+
+## Interaktives Streamlit-Dashboard
+
+Das Projekt enthält ein Dashboard zur Visualisierung der Ergebnisse.
+
+Funktionen:
+
+- Modellvergleich
+- Analyse verschiedener RUL-Caps
+- Feature-Importance
+- Engine Explorer
+- Visualisierung normalisierter Sensorverläufe
+
+Starten mit:
+
+```bash
+uv add streamlit
+uv run streamlit run src/streamlit_dashboard.py
+```
+
+---
+
+## Verwendete Technologien
+
+- Python
+- pandas
+- NumPy
+- scikit-learn
+- LightGBM
+- XGBoost
+- SQLAlchemy
+- SQLite
+- scikit-optimize
+- Streamlit
+- Matplotlib
+
+---
+
+## Installation
+
+```bash
+uv sync
+```
+
+oder
+
+```bash
+pip install -r requirements.txt
+```
+
+Anschließend den NASA-CMAPSS-Datensatz in `data/` ablegen und die ETL-Pipeline ausführen.
+
+---
+
+## Lizenz
+
+Dieses Repository dient Lern-, Demonstrations- und Portfoliozwecken.
+
+---
+
+**Autor:** Yuchuan Liu

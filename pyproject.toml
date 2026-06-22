@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "joblib>=1.5.3",
     "lightgbm>=4.6.0",
     "matplotlib>=3.11.0",
     "numpy>=2.4.6",
@@ -15,5 +16,6 @@ dependencies = [
     "scikit-optimize>=0.10.2",
     "seaborn>=0.13.2",
     "sqlalchemy>=2.0.51",
+    "streamlit>=1.58.0",
     "xgboost>=3.3.0",
 ]

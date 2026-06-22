@@ -1,6 +1,17 @@
-DATABASE_URL = "sqlite:///../db/turbofan_engine.db"
+from pathlib import Path
 
-RAW_DATA_PATH = "../data/raw/"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+DATABASE_PATH = PROJECT_ROOT / "db" / "turbofan_engine.db"
+DATABASE_URL = f"sqlite:///{DATABASE_PATH.as_posix()}"
+
+RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw"
+
+MODEL_PATH = PROJECT_ROOT / "models"
+
+#DATABASE_URL = "sqlite:///../db/turbofan_engine.db"
+#RAW_DATA_PATH = "../data/raw/"
+
 # Variante A: explizite Liste
 DATASETS_META = [
   {

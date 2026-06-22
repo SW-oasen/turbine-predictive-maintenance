@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.base import clone
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-from src.config import *
+from config import *
 
 # create evaluation DataFrame by merging predictions with true RUL values
 # in order to compute evaluation metrics and create plots of true vs predicted RUL

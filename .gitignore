@@ -13,7 +13,7 @@ dist/
 .venv/
 venv/
 
-# Data
+# Data, models, and database
 data/
 db/
 models/
@@ -28,3 +28,6 @@ models/
 # OS
 .DS_Store
 Thumbs.db
+
+# presentation original files
+presentation/orig/*

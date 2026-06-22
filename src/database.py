@@ -3,10 +3,8 @@ import os
 from typing import Literal
 import pandas as pd
 import numpy as np
-#import yaml
-from sqlalchemy import create_engine
 
-from src.config import *
+from config import *
 import sqlalchemy as sa
 
 def create_database(db_url, df_train_test, df_test_rul, datasets_info=DATASETS_META):
